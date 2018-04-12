@@ -1,5 +1,4 @@
 # rocketJumpMan
-=======
 
 this is a school project
 
