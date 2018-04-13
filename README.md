@@ -6,6 +6,6 @@ this is a school project
 
 coming feature
 ----------------
-1. add floor
+1. add floor (finish)
 2. add energy bar
 3. add ranking
