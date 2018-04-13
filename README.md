@@ -11,6 +11,9 @@ coming feature
 3. add ranking(or any networking)
 
 want to add something new before add the energy bar
+
 1.rocket fire while jump
+
 2.UImenu
+
 3.Video (must be add, project requirement)
