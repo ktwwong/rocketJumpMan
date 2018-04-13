@@ -7,13 +7,12 @@ this is a school project
 coming feature
 ----------------
 1. add floor (finish)
-2. add energy bar
-3. add ranking(or any networking)
+2. add ranking(or any networking)
+// want to add something new before add the energy bar
+1.1.rocket fire while jump
+1.2.UImenu
+1.3.Video (must be add, project requirement)
 
-want to add something new before add the energy bar
-
-1.rocket fire while jump
-
-2.UImenu
-
-3.Video (must be add, project requirement)
+// final goal
+3. add energy bar and change the missile to the enery drinks
+4. still can add some missile
