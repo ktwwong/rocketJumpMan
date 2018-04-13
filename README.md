@@ -20,8 +20,8 @@ coming feature
 1.3.Video (must be add, project requirement)
 
 
-// final goal
-
+Final goal
+-----
 
 3. add energy bar and change the missile to the enery drinks
 
