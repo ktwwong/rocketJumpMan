@@ -10,7 +10,7 @@ public class Player extends GameObject{
     private boolean playing;
     private Animation animation = new Animation();
     private long startTime;
-    private static final int START_POSITION = 350;
+    private static final int START_POSITION = 300;
 
     public Player(Bitmap res, int w, int h, int numFrames){
         x = 100;
@@ -42,9 +42,9 @@ public class Player extends GameObject{
         }
         animation.update();
 
-        if (jumping){
+        if (jumping) {
             moveY -= 1;
-        }else {
+        } else {
             moveY += 1;
         }
 
@@ -53,14 +53,14 @@ public class Player extends GameObject{
         if (moveY < -7)
             moveY = -7;
 
-        y += moveY*2;
+        y += moveY * 2;
 
-        //MARK: don't fall down for now
-        if (y >= START_POSITION){
-            y = START_POSITION;
-        }
+//        //MARK: don't fall down for now
+//        if (y >= START_POSITION){
+//            y = START_POSITION;
+//        }
 
-        // don't fly out of the screen
+        // don't fly out of the top screen
         if (y <= 0){
             y = 0;
         }
@@ -78,6 +78,6 @@ public class Player extends GameObject{
     public void setPlaying(boolean isPlaying) {
         this.playing = isPlaying;
     }
-    public void resetDY(){moveY = 0;}
+    public void resetMoveY(){moveY = 0;}
     public void resetScore(){score = 0;}
 }
