@@ -1,6 +1,8 @@
 package com.example.kt.rocketJumpMan;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -8,30 +10,20 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
+    public static final String EXTRA_DIFF = "diff";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // requesting to turn the title OFF
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        // full screen
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(new GamePanel(this));
-    }
+        setContentView(R.layout.activity_main);
 
-//    @Override
-//    public boolean onCreateOptionsMenu (Menu menu){
-//        getMenuInflater().inflate(R.menu.menu_game, menu);
-//        return true;
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected (MenuItem item){
-//        int id = item.getItemId();
-//
-//        if (id == R.id.action_settings)
-//            return true;
-//
-//        return super.onCreateOptionsMenu(item);
-//    }
+        int diff = 1;
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            diff = extras.getInt(EXTRA_DIFF);
+        }
+
+        GamePanel gamePanel = findViewById(R.id.gamePanel);
+        gamePanel.setDiff(diff);
+    }
 }
