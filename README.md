@@ -22,6 +22,8 @@ coming feature
 1.3.Video (must be add, project requirement)
 
 
+1.4.Game Audio
+
 Final goal
 -----
 
