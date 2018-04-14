@@ -59,6 +59,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     int diff;
     int best;
 
+    boolean timePass;
+
     Paint hudPaint = new Paint();
     Paint textPaint = new Paint();
     Paint text2Paint = new Paint();
@@ -148,6 +150,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case STATE_INTRO: {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        timePass = false;
                         startGame();
                         return true;
                     default:
@@ -233,6 +236,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             // remove missile if the is out of the screen
             if (missiles.get(i).getX() < -100) {
                 missiles.remove(i);
+                timePass = true;
                 break;
             }
         }
@@ -339,7 +343,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case STATE_IN_GAME: {
                 canvas.drawText("Score: " + soldier.getScore(), 10, hudPaint.getTextSize(), hudPaint);
                 canvas.drawText("Best: " + best, 10, hudPaint.getTextSize() * 2, hudPaint);
-                canvas.drawText("You Can Walk On This Platform, Won't fall", WIDTH / 2 - 50, HEIGHT - 110, text3Paint);
+                if (!timePass){
+                    canvas.drawText("You Can Walk On The Platform, Won't fall", WIDTH / 2 - 50, HEIGHT - 110, text3Paint);
+                }
             }
             break;
             case STATE_GAME_OVER: {
