@@ -7,7 +7,7 @@ this is a school project
 coming feature
 ----------------
 ~~1. add floor~~
-  
+
 2. add ranking(or any networking)
 
 
@@ -17,10 +17,10 @@ coming feature
 1.1.rocket fire while jump
 
 
-~~1.2.UImenu
+~~1.2.UImenu~~
 
 
-~~1.3.Video (must be add, project requirement)
+~~1.3.Video (must be add, project requirement)~~
 
 
 1.4.Game Audio
