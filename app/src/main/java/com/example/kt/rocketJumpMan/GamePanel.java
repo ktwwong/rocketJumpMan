@@ -1,265 +1,329 @@
 package com.example.kt.rocketJumpMan;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import com.example.kt.rocketJumpMan.objects.Botborder;
+import com.example.kt.rocketJumpMan.objects.GameObject;
+import com.example.kt.rocketJumpMan.objects.Bullet;
+import com.example.kt.rocketJumpMan.objects.Player;
+import com.example.kt.rocketJumpMan.objects.Smoke;
 
 import java.util.ArrayList;
 import java.util.Random;
 
 public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
-	public static final int WIDTH = 856;
-	public static final int HEIGHT = 480;
-	public static final int SPEED = -5;
+    public static final int WIDTH = 856;
+    public static final int HEIGHT = 480;
+    public static final int SPEED = -5;
+    private static final int MAX_BULLET = 5;
 
-	private long smokeStartTime;
+    private static final int STATE_INTRO = 0;
+    private static final int STATE_IN_GAME = 1;
+    private static final int STATE_GAME_OVER = 2;
 
-	private long missileStartTime;
+    private long smokeStartTime;
+    private long missileStartTime;
 
-	private Random random = new Random();
+    private Random random = new Random();
 
-    private MainThread thread;
-    private Background bgfactory;
+    private Context context;
+    private static MainThread thread;
+    private Background bgFactory;
     private Player soldier;
-    private ArrayList<Smoke> puff;
-    private ArrayList<Missile> missiles;
-    private ArrayList<Botborder> platform;
+    private final ArrayList<Smoke> puff = new ArrayList<>();
+    private final ArrayList<Bullet> missiles = new ArrayList<>();
+    private final ArrayList<Botborder> platform = new ArrayList<>();
 
-    private static final int MAX_NUM = 5;
+    float scaleFactorX, scaleFactorY;
+    int gameState = STATE_INTRO;
+    int diff;
+    int best;
 
-    private int best;
+    Paint hudPaint = new Paint();
+    Paint textPaint = new Paint();
+    Paint text2Paint = new Paint();
+    Paint text3Paint = new Paint();
 
-    public GamePanel(Context context){
-        super(context);
+    public GamePanel(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        this.context = context;
         getHolder().addCallback(this);
-        setFocusable(true);
+
+        SharedPreferences pref = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE);
+        best = pref.getInt("high_score", 0);
+
+        hudPaint.setColor(Color.WHITE);
+        hudPaint.setTextSize(30);
+        hudPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        textPaint.setColor(Color.BLACK);
+        textPaint.setTextSize(40);
+        textPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        text2Paint.setColor(Color.BLACK);
+        text2Paint.setTextSize(20);
+        text2Paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+        text3Paint.setColor(Color.WHITE);
+        text3Paint.setTextSize(20);
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){}
+    public void surfaceCreated(SurfaceHolder holder) {
+        bgFactory = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sci_fi_bg_low));
+        soldier = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.soldier), 26, 40, 2);
+
+        smokeStartTime = System.nanoTime();
+        missileStartTime = System.nanoTime();
+
+        // Start game loop
+        if (thread == null) {
+            thread = new MainThread(getHolder(), this);
+            thread.setRunning(true);
+            thread.start();
+        }
+    }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder){
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        scaleFactorX = (float) width / (float) WIDTH;
+        scaleFactorY = (float) height / (float) HEIGHT;
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        if (thread == null)
+            return;
+
+        thread.setRunning(false);
+
         boolean retry = true;
-        while(retry){
+        while (retry) {
             try {
-                thread.setRunning(false);
                 thread.join();
-                retry = false;
                 thread = null;
-            }catch (InterruptedException e){
+                retry = false;
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
-    public void surfaceCreated(SurfaceHolder holder){
-        bgfactory = new Background(BitmapFactory.decodeResource(getResources(), R.drawable.sci_fi_bg_low));
-        soldier = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.soldier), 26, 40, 2);
-        puff = new ArrayList<Smoke>();
-        missiles = new ArrayList<Missile>();
-        platform = new ArrayList<Botborder>();
-
-        for (int i = 0; i < WIDTH; i+=100) {
-            platform.add(new Botborder(BitmapFactory.decodeResource(getResources(), R.drawable.floorbox), 0 + i, HEIGHT - 100));
-        }
-
-        smokeStartTime = System.nanoTime();
-        missileStartTime = System.nanoTime();
-
-        thread = new MainThread(getHolder(), this);
-		//start game loop
-        thread.setRunning(true);
-        thread.start();
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event){
-        if (event.getAction() == MotionEvent.ACTION_DOWN){
-            if (!soldier.getPlaying()) {
-                soldier.setPlaying(true);
-            }else{
-                soldier.setUp(true);
-            }
-            return true;
-        }
-        if (event.getAction() == MotionEvent.ACTION_UP){
-            soldier.setUp(false);
-            return true;
-        }
-        return super.onTouchEvent(event);
-    }
-
-    public void update(){
-        if (soldier.getPlaying()) {
-            bgfactory.update();
-            soldier.update();
-
-            if (fallOutScreen())
-                soldier.setPlaying(false);
-            else
-                soldier.setPlaying(true);
-
-            // add missiles on timer
-            long missileElapsed = (System.nanoTime() - missileStartTime)/1000000;
-            if (missileElapsed > (2000 - soldier.getScore())/4){
-                // first missile always goes down the middle
-                if (missiles.size() <= MAX_NUM) {
-                    if (missiles.size() == 0) {
-                        missiles.add(new Missile(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
-                    } else {
-                        missiles.add(new Missile(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT/1.3)), 45, 15, soldier.getScore(), 13));
-                    }
-                }
-                // reset timer
-                missileStartTime = System.nanoTime();
-            }
-
-            for (int i = 0; i < missiles.size(); i++){
-                // update missile
-                missiles.get(i).update();
-                if (collision(missiles.get(i), soldier)){
-                    // remove when hit
-                    missiles.remove(i);
-                    // the game end
-                    soldier.setPlaying(false);
-                    break;
-                }
-                // remove missile if the is out of the screen
-                if (missiles.get(i).getX() < -100){
-                    missiles.remove(i);
-                    break; 
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (gameState) {
+            case STATE_INTRO: {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        startGame();
+                        return true;
+                    default:
+                        return super.onTouchEvent(event);
                 }
             }
-
-            // first missile always goes down the middle
-            if (platform.size() <= MAX_NUM) {
-                if (random.nextBoolean())
-                    platform.add(new Botborder(BitmapFactory.decodeResource(getResources(), R.drawable.floorbox), WIDTH, HEIGHT -100));
-            }
-            for (int i =0; i < platform.size(); i++){
-                platform.get(i).update();
-                if (collision(platform.get(i), soldier)){
-                    soldier.y = HEIGHT - platform.get(i).getHeight() - 40;
-                }
-                if (platform.get(i).getX() < -100){
-                    platform.remove(i);
-                    break;
+            case STATE_IN_GAME: {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        soldier.setUp(true);
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        soldier.setUp(false);
+                        return true;
+                    default:
+                        return super.onTouchEvent(event);
                 }
             }
-
-            // add smoke puffs on timer
-            long elapsed = (System.nanoTime() - smokeStartTime)/1000000;
-            if (elapsed > 120){
-                puff.add(new Smoke(soldier.getX(), soldier.getY()+30));
-                smokeStartTime = System.nanoTime();
-            }
-
-            for (int i=0; i < puff.size(); i++){
-                puff.get(i).update();
-                if (puff.get(i).getX() < -10){
-                    puff.remove(i);
+            case STATE_GAME_OVER: {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        if (context instanceof MainActivity) {
+                            MainActivity activity = (MainActivity) context;
+                            Intent intent = new Intent(activity, RankActivity.class);
+                            intent.putExtra(RankActivity.EXTRA_MY_SCORE, soldier.getScore());
+                            activity.startActivity(intent);
+                            activity.finish();
+                        }
+                        return true;
+                    default:
+                        return super.onTouchEvent(event);
                 }
             }
-        }
-        else {
-            reStart();
+            default:
+                return super.onTouchEvent(event);
         }
     }
 
-    public boolean collision(GameObject a, GameObject b){
-        if (Rect.intersects(a.getRect(), b.getRect())){
-            return true;
-        }
-        return false;
+    public void setDiff(int value) {
+        diff = value;
     }
 
-    public boolean fallOutScreen(){
+    public void update() {
+        if (gameState != STATE_IN_GAME)
+            return;
+
         // if player fall out from screen
-        if (soldier.y >= HEIGHT){
-            return true;
+        if (soldier.y >= HEIGHT) {
+            gameOver();
+            return;
         }
-        return false;
+
+        bgFactory.update();
+        soldier.update();
+
+        // add missiles on timer
+        long missileElapsed = (System.nanoTime() - missileStartTime) / 1000000;
+        if (missileElapsed > (2000 - soldier.getScore()) / 4) {
+            // first missile always goes down the middle
+            if (missiles.size() <= MAX_BULLET) {
+                if (missiles.size() == 0) {
+                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
+                } else {
+                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT / 1.3)), 45, 15, soldier.getScore(), 13));
+                }
+            }
+            // reset timer
+            missileStartTime = System.nanoTime();
+        }
+
+        for (int i = 0; i < missiles.size(); i++) {
+            missiles.get(i).setSpeed(6 + diff);
+            // update missile
+            missiles.get(i).update();
+            if (collision(missiles.get(i), soldier)) {
+                // remove when hit
+                missiles.remove(i);
+                // the game end
+                gameOver();
+                break;
+            }
+            // remove missile if the is out of the screen
+            if (missiles.get(i).getX() < -100) {
+                missiles.remove(i);
+                break;
+            }
+        }
+
+        // first missile always goes down the middle
+        if (platform.size() <= MAX_BULLET) {
+            if (random.nextBoolean())
+                platform.add(new Botborder(BitmapFactory.decodeResource(getResources(), R.drawable.floorbox), WIDTH, HEIGHT - 100));
+        }
+        for (int i = 0; i < platform.size(); i++) {
+            platform.get(i).update();
+            if (collision(platform.get(i), soldier)) {
+                soldier.y = HEIGHT - platform.get(i).getHeight() - 40;
+            }
+            if (platform.get(i).getX() < -100) {
+                platform.remove(i);
+                break;
+            }
+        }
+
+        // add smoke puffs on timer
+        long elapsed = (System.nanoTime() - smokeStartTime) / 1000000;
+        if (elapsed > 120) {
+            puff.add(new Smoke(soldier.getX(), soldier.getY() + 30));
+            smokeStartTime = System.nanoTime();
+        }
+
+        for (int i = 0; i < puff.size(); i++) {
+            puff.get(i).update();
+            if (puff.get(i).getX() < -10) {
+                puff.remove(i);
+            }
+        }
     }
 
-    @Override
-    public void draw(Canvas canvas) {
-        super.draw(canvas);
-        final float scaleFactorX = getWidth() / (WIDTH * 1.f);
-        final float scaleFactorY = getHeight() / (HEIGHT * 1.f);
-        if (canvas != null) {
-            final int savedState = canvas.save();
+    public boolean collision(GameObject a, GameObject b) {
+        return Rect.intersects(a.getRect(), b.getRect());
+    }
 
-            canvas.scale(scaleFactorX, scaleFactorY);
+    public void drawObjects(Canvas canvas) {
+        final int savedState = canvas.save();
+        canvas.scale(scaleFactorX, scaleFactorY);
 
-            bgfactory.draw(canvas);
+        bgFactory.draw(canvas);
+
+        if (gameState == STATE_IN_GAME) {
             soldier.draw(canvas);
-            for (Smoke smokepuff:puff){
+            for (Smoke smokepuff : puff) {
                 smokepuff.draw(canvas);
             }
 
-            for (Missile m: missiles){
-                m.draw(canvas);
-            }
-
-            for (Botborder floor: platform){
+            for (Botborder floor : platform) {
                 floor.draw(canvas);
             }
 
-            drawText(canvas);
-            canvas.restoreToCount(savedState);
+            for (Bullet m : missiles) {
+                m.draw(canvas);
+            }
         }
+
+        drawText(canvas);
+        canvas.restoreToCount(savedState);
     }
 
-    public void reStart(){
-        platform.clear();
-        missiles.clear();
-        puff.clear();
-
+    public void startGame() {
+        soldier.setPlaying(true);
         soldier.resetMoveY();
         soldier.resetScore();
         soldier.setY(300);
 
-        if (soldier.getScore() > best) {
-            best = soldier.getScore();
+        for (int i = 0; i < WIDTH; i += 100) {
+            platform.add(new Botborder(BitmapFactory.decodeResource(getResources(), R.drawable.floorbox), i, HEIGHT - 100));
         }
 
-        for (int i = 0; i < WIDTH; i += 100) {
-            platform.add(new Botborder(BitmapFactory.decodeResource(getResources(), R.drawable.floorbox), 0 + i, HEIGHT - 100));
-        }
+        gameState = STATE_IN_GAME;
     }
 
-    public void drawText(Canvas canvas){
-        Paint paint = new Paint();
-        paint.setColor(Color.BLACK);
-        paint.setTextSize(30);
-        paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-        canvas.drawText("Distance: " + (soldier.getScore()*3), 10, 0 + 30, paint);
-        canvas.drawText("Best: " + best, WIDTH - 215, 0 + 30, paint);
+    public void gameOver() {
+        soldier.setPlaying(false);
 
-        if (!soldier.getPlaying()){
-            Paint paint1 = new Paint();
-            paint1.setTextSize(40);
-            paint1.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
-            canvas.drawText("PRESS TO START", WIDTH/2 - 50, HEIGHT/2, paint1);
-
-            paint1.setTextSize(20);
-            canvas.drawText("PRESS AND HOLD TO GO UP", WIDTH/2 - 50, HEIGHT/2 + 20, paint1);
-            canvas.drawText("RELEASE TO GO DOWN", WIDTH/2 - 50, HEIGHT/2 + 40, paint1);
-
-            Paint paint2 = new Paint();
-            paint2.setColor(Color.WHITE);
-            paint2.setTextSize(20);
-            canvas.drawText("You Can Walk On This Platform, Won't fall", WIDTH/2 - 50, HEIGHT - 110, paint2);
+        SharedPreferences pref = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE);
+        if (soldier.getScore() > pref.getInt("high_score", 0)) {
+            best = soldier.getScore();
+            SharedPreferences.Editor editor = pref.edit();
+            editor.putInt("high_score", soldier.getScore());
+            editor.apply();
         }
 
+        platform.clear();
+        missiles.clear();
+        puff.clear();
+
+        gameState = STATE_GAME_OVER;
+    }
+
+    public void drawText(Canvas canvas) {
+        switch (gameState) {
+            case STATE_INTRO: {
+                canvas.drawText("PRESS TO START", WIDTH / 2 - 50, HEIGHT / 2, textPaint);
+                canvas.drawText("PRESS AND HOLD TO GO UP", WIDTH / 2 - 50, HEIGHT / 2 + 20, text2Paint);
+                canvas.drawText("RELEASE TO GO DOWN", WIDTH / 2 - 50, HEIGHT / 2 + 40, text2Paint);
+                canvas.drawText("You Can Walk On This Platform, Won't fall", WIDTH / 2 - 50, HEIGHT - 110, text3Paint);
+            }
+            break;
+            case STATE_IN_GAME: {
+                canvas.drawText("Score: " + soldier.getScore(), 10, hudPaint.getTextSize(), hudPaint);
+                canvas.drawText("Best: " + best, 10, hudPaint.getTextSize() * 2, hudPaint);
+            }
+            break;
+            case STATE_GAME_OVER: {
+                canvas.drawText("Your Score", (WIDTH / 2) - textPaint.measureText("Your Score") / 2, HEIGHT / 2, textPaint);
+                canvas.drawText(String.valueOf(soldier.getScore()), (WIDTH / 2) - textPaint.measureText(String.valueOf(soldier.getScore())) / 2, (HEIGHT / 2) + textPaint.getTextSize(), textPaint);
+            }
+            break;
+        }
     }
 }

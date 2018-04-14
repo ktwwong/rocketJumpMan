@@ -4,7 +4,9 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-public class Smoke extends GameObject{
+import com.example.kt.rocketJumpMan.objects.GameObject;
+
+public class Smoke extends GameObject {
     public int radius;
     public Smoke(int x, int y){
         radius = 5;
