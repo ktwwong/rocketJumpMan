@@ -2,8 +2,6 @@ package com.example.kt.rocketJumpMan;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -20,7 +18,7 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class RankActivity extends AppCompatActivity {
+public class UIrank extends AppCompatActivity {
     public static final String EXTRA_MY_SCORE = "my_score";
 
     private int mMyScore;
@@ -33,17 +31,17 @@ public class RankActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         mMyScore = extras != null ? extras.getInt(EXTRA_MY_SCORE) : 0;
 
-        Button button = (Button) findViewById(R.id.btnback);
-        final TextView Score = (TextView) findViewById(R.id.highScore);
+        Button button = findViewById(R.id.btnback);
+        final TextView Score = findViewById(R.id.highScore);
+        final TextView myScore = (TextView) findViewById(R.id.yourScore);
+
+
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                //startActivity(new Intent(RankActivity.this, UImenu.class));
                 finish();
             }
         });
-
-        final int score = getIntent().getIntExtra("SCORE", 0);
 
         final AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         final EditText input = new EditText(this);
@@ -54,6 +52,7 @@ public class RankActivity extends AppCompatActivity {
         alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                myScore.setText("Your Score: \n" + mMyScore);
 //                if (input != null) {
 //                    // http://php-toto37648674894205.codeanyapp.com/insertData.php?name=hihi&score=10
 //                    String urlString1 = "http://php-toto37648674894205.codeanyapp.com/insertData.php?name="+input.getText().toString()+"&score="+score;

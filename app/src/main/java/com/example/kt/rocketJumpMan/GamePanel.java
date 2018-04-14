@@ -4,13 +4,19 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -21,6 +27,7 @@ import com.example.kt.rocketJumpMan.objects.Bullet;
 import com.example.kt.rocketJumpMan.objects.Player;
 import com.example.kt.rocketJumpMan.objects.Smoke;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -52,15 +59,32 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     int diff;
     int best;
 
+    boolean timePass;
+
     Paint hudPaint = new Paint();
     Paint textPaint = new Paint();
     Paint text2Paint = new Paint();
     Paint text3Paint = new Paint();
 
+    private SoundPool soundPool = new SoundPool(10,AudioManager.STREAM_MUSIC,0);;
+    private int id = -1;
+
     public GamePanel(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;
         getHolder().addCallback(this);
+
+        try {
+            AssetManager assetManager = context.getAssets();
+            AssetFileDescriptor descriptor;
+
+            descriptor = assetManager.openFd("engine_takeoff.wav");
+            id = soundPool.load(descriptor, 0);
+        } catch(IOException e){
+            // Print an error message to the console
+            Log.e("error", "failed to load sound files");
+        }
+
 
         SharedPreferences pref = context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE);
         best = pref.getInt("high_score", 0);
@@ -126,6 +150,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             case STATE_INTRO: {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
+                        timePass = false;
                         startGame();
                         return true;
                     default:
@@ -136,6 +161,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         soldier.setUp(true);
+                        soundPool.play(id, 1, 1, 0, 0,1);
                         return true;
                     case MotionEvent.ACTION_UP:
                         soldier.setUp(false);
@@ -149,8 +175,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                     case MotionEvent.ACTION_DOWN:
                         if (context instanceof MainActivity) {
                             MainActivity activity = (MainActivity) context;
-                            Intent intent = new Intent(activity, RankActivity.class);
-                            intent.putExtra(RankActivity.EXTRA_MY_SCORE, soldier.getScore());
+                            Intent intent = new Intent(activity, UIrank.class);
+                            intent.putExtra(UIrank.EXTRA_MY_SCORE, soldier.getScore());
                             activity.startActivity(intent);
                             activity.finish();
                         }
@@ -210,6 +236,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             // remove missile if the is out of the screen
             if (missiles.get(i).getX() < -100) {
                 missiles.remove(i);
+                timePass = true;
                 break;
             }
         }
@@ -308,15 +335,17 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     public void drawText(Canvas canvas) {
         switch (gameState) {
             case STATE_INTRO: {
-                canvas.drawText("PRESS TO START", WIDTH / 2 - 50, HEIGHT / 2, textPaint);
-                canvas.drawText("PRESS AND HOLD TO GO UP", WIDTH / 2 - 50, HEIGHT / 2 + 20, text2Paint);
-                canvas.drawText("RELEASE TO GO DOWN", WIDTH / 2 - 50, HEIGHT / 2 + 40, text2Paint);
-                canvas.drawText("You Can Walk On This Platform, Won't fall", WIDTH / 2 - 50, HEIGHT - 110, text3Paint);
+                canvas.drawText("PRESS TO START", WIDTH / 2 -100, HEIGHT / 2, textPaint);
+                canvas.drawText("PRESS AND HOLD TO GO UP", WIDTH / 2 -100, HEIGHT / 2 + 20, text2Paint);
+                canvas.drawText("RELEASE TO GO DOWN", WIDTH / 2 - 100, HEIGHT / 2 + 40, text2Paint);
             }
             break;
             case STATE_IN_GAME: {
                 canvas.drawText("Score: " + soldier.getScore(), 10, hudPaint.getTextSize(), hudPaint);
                 canvas.drawText("Best: " + best, 10, hudPaint.getTextSize() * 2, hudPaint);
+                if (!timePass){
+                    canvas.drawText("You Can Walk On The Platform, Won't fall", WIDTH / 2 - 50, HEIGHT - 110, text3Paint);
+                }
             }
             break;
             case STATE_GAME_OVER: {

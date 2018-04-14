@@ -21,7 +21,7 @@
             android:name=".MainActivity"
             android:screenOrientation="userLandscape" />
         <activity
-            android:name=".RankActivity"
+            android:name=".UIrank"
             android:screenOrientation="userLandscape" />
         <activity
             android:name=".UImenu"
