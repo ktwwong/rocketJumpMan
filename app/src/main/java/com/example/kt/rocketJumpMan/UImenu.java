@@ -1,8 +1,11 @@
 package com.example.kt.rocketJumpMan;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
 public class UImenu extends Activity{
@@ -38,5 +41,35 @@ public class UImenu extends Activity{
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.EXTRA_DIFF, diff);
         startActivity(intent);
+    }
+
+    public void newDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Do you want to quit game?");
+        builder.setTitle("Exit");
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).show();
+    }
+
+    public boolean dispatchKeyEvent(KeyEvent event){
+
+        if (event.getAction() == KeyEvent.ACTION_DOWN){
+            switch (event.getKeyCode()){
+                case KeyEvent.KEYCODE_BACK:
+                    newDialog();
+            }
+        }
+        return super.dispatchKeyEvent(event);
     }
 }

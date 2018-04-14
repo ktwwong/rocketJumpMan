@@ -9,7 +9,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".UImenu"
+            android:name=".UIanimation"
             android:screenOrientation="userLandscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,7 +20,12 @@
         <activity
             android:name=".MainActivity"
             android:screenOrientation="userLandscape" />
-        <activity android:name=".RankActivity"></activity>
+        <activity
+            android:name=".RankActivity"
+            android:screenOrientation="userLandscape" />
+        <activity
+            android:name=".UImenu"
+            android:screenOrientation="userLandscape" />
     </application>
 
 </manifest>

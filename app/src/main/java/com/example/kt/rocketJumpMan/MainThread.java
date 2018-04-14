@@ -29,11 +29,13 @@ public class MainThread extends Thread {
             startTime = System.nanoTime();
 
             Canvas canvas = surfaceHolder.lockCanvas();
-            synchronized (surfaceHolder) {
-                gamePanel.update();
-                gamePanel.drawObjects(canvas);
+            if (canvas != null) {
+                synchronized (surfaceHolder) {
+                    gamePanel.update();
+                    gamePanel.drawObjects(canvas);
+                }
+                surfaceHolder.unlockCanvasAndPost(canvas);
             }
-            surfaceHolder.unlockCanvasAndPost(canvas);
 
             timeMillis = (System.nanoTime() - startTime) / 1000000;
             waitTime = targetTime - timeMillis;

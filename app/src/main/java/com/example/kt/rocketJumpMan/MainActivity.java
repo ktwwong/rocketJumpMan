@@ -10,6 +10,8 @@ import android.view.Window;
 import android.view.WindowManager;
 
 public class MainActivity extends Activity {
+    GamePanel gamePanel;
+
     public static final String EXTRA_DIFF = "diff";
 
     @Override
@@ -23,7 +25,7 @@ public class MainActivity extends Activity {
             diff = extras.getInt(EXTRA_DIFF);
         }
 
-        GamePanel gamePanel = findViewById(R.id.gamePanel);
+        gamePanel = findViewById(R.id.gamePanel);
         gamePanel.setDiff(diff);
     }
 }

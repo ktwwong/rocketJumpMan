@@ -17,7 +17,7 @@ import android.view.SurfaceView;
 
 import com.example.kt.rocketJumpMan.objects.Botborder;
 import com.example.kt.rocketJumpMan.objects.GameObject;
-import com.example.kt.rocketJumpMan.objects.Missile;
+import com.example.kt.rocketJumpMan.objects.Bullet;
 import com.example.kt.rocketJumpMan.objects.Player;
 import com.example.kt.rocketJumpMan.objects.Smoke;
 
@@ -44,7 +44,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private Background bgFactory;
     private Player soldier;
     private final ArrayList<Smoke> puff = new ArrayList<>();
-    private final ArrayList<Missile> missiles = new ArrayList<>();
+    private final ArrayList<Bullet> missiles = new ArrayList<>();
     private final ArrayList<Botborder> platform = new ArrayList<>();
 
     float scaleFactorX, scaleFactorY;
@@ -187,9 +187,9 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
             // first missile always goes down the middle
             if (missiles.size() <= MAX_BULLET) {
                 if (missiles.size() == 0) {
-                    missiles.add(new Missile(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
+                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
                 } else {
-                    missiles.add(new Missile(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT / 1.3)), 45, 15, soldier.getScore(), 13));
+                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT / 1.3)), 45, 15, soldier.getScore(), 13));
                 }
             }
             // reset timer
@@ -265,7 +265,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 floor.draw(canvas);
             }
 
-            for (Missile m : missiles) {
+            for (Bullet m : missiles) {
                 m.draw(canvas);
             }
         }
