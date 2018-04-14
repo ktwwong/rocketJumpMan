@@ -43,4 +43,4 @@ hey! here I will going to tell you what have change!!
 4. the UI menu is created, very simple one XD
 
 __Oops!!__
-Yea I know, the rocket fire and fuel(energy bar) is not added, this is the feature I really want to add, but I have fulfill the project requirement first, I hope that I still have time to add these funny feature in this game:)
+Yea I know, the rocket fire and fuel(energy bar) is not added, this is the feature I really want to add, but I have to fulfill the project requirement first, I hope that I still have time to add these funny feature in this game:)
