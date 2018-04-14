@@ -6,8 +6,7 @@ this is a school project
 
 coming feature
 ----------------
-~~1. add floor~~
-
+~~1. add floor~~  
 2. add ranking(or any networking)
 
 
