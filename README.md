@@ -7,6 +7,7 @@ this is a school project
 coming feature
 ----------------
 ~~1. add floor~~
+  
 2. add ranking(or any networking)
 
 
@@ -35,7 +36,7 @@ Final goal
 
 What job have done
 ===========
-hey! here I will going to tell you what have change!!/n
+hey! here I will going to tell you what have change!!
 1. the floor is added
 2. the ranking page is prepared, I am going to add it in
 3. the opening video is added. (fulfill the Video requirement?!)
