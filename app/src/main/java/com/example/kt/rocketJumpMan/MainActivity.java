@@ -22,7 +22,20 @@ public class MainActivity extends Activity {
         int diff = 1;
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            diff = extras.getInt(EXTRA_DIFF);
+            switch (extras.getInt(EXTRA_DIFF)){
+                case 1:
+                    diff = 1;
+                    break;
+                case 2:
+                    diff = 3;
+                    break;
+                case 3:
+                    diff = 5;
+                    break;
+                    default:
+                        diff = 1;
+                        break;
+            }
         }
 
         gamePanel = findViewById(R.id.gamePanel);
