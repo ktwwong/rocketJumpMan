@@ -50,8 +50,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
     private static MainThread thread;
     private Background bgFactory;
     private Player soldier;
-    private final ArrayList<Smoke> puff = new ArrayList<>();
-    private final ArrayList<Bullet> missiles = new ArrayList<>();
+    private final ArrayList<Smoke> smokes = new ArrayList<>();
+    private final ArrayList<Bullet> bullets = new ArrayList<>();
     private final ArrayList<Botborder> platform = new ArrayList<>();
 
     float scaleFactorX, scaleFactorY;
@@ -211,31 +211,31 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         long missileElapsed = (System.nanoTime() - missileStartTime) / 1000000;
         if (missileElapsed > (2000 - soldier.getScore()) / 4) {
             // first missile always goes down the middle
-            if (missiles.size() <= MAX_BULLET) {
-                if (missiles.size() == 0) {
-                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
+            if (bullets.size() <= MAX_BULLET) {
+                if (bullets.size() == 0) {
+                    bullets.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, HEIGHT / 2, 45, 15, soldier.getScore(), 13));
                 } else {
-                    missiles.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT / 1.3)), 45, 15, soldier.getScore(), 13));
+                    bullets.add(new Bullet(BitmapFactory.decodeResource(getResources(), R.drawable.missile), WIDTH + 10, (int) (random.nextDouble() * (HEIGHT / 1.3)), 45, 15, soldier.getScore(), 13));
                 }
             }
             // reset timer
             missileStartTime = System.nanoTime();
         }
 
-        for (int i = 0; i < missiles.size(); i++) {
-            missiles.get(i).setSpeed(6 + diff);
+        for (int i = 0; i < bullets.size(); i++) {
+            bullets.get(i).setSpeed(6 + diff);
             // update missile
-            missiles.get(i).update();
-            if (collision(missiles.get(i), soldier)) {
+            bullets.get(i).update();
+            if (collision(bullets.get(i), soldier)) {
                 // remove when hit
-                missiles.remove(i);
+                bullets.remove(i);
                 // the game end
                 gameOver();
                 break;
             }
             // remove missile if the is out of the screen
-            if (missiles.get(i).getX() < -100) {
-                missiles.remove(i);
+            if (bullets.get(i).getX() < -100) {
+                bullets.remove(i);
                 timePass = true;
                 break;
             }
@@ -260,14 +260,14 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         // add smoke puffs on timer
         long elapsed = (System.nanoTime() - smokeStartTime) / 1000000;
         if (elapsed > 120) {
-            puff.add(new Smoke(soldier.getX(), soldier.getY() + 30));
+            smokes.add(new Smoke(soldier.getX(), soldier.getY() + 30));
             smokeStartTime = System.nanoTime();
         }
 
-        for (int i = 0; i < puff.size(); i++) {
-            puff.get(i).update();
-            if (puff.get(i).getX() < -10) {
-                puff.remove(i);
+        for (int i = 0; i < smokes.size(); i++) {
+            smokes.get(i).update();
+            if (smokes.get(i).getX() < -10) {
+                smokes.remove(i);
             }
         }
     }
@@ -284,7 +284,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
 
         if (gameState == STATE_IN_GAME) {
             soldier.draw(canvas);
-            for (Smoke smokepuff : puff) {
+            for (Smoke smokepuff : smokes) {
                 smokepuff.draw(canvas);
             }
 
@@ -292,7 +292,7 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
                 floor.draw(canvas);
             }
 
-            for (Bullet m : missiles) {
+            for (Bullet m : bullets) {
                 m.draw(canvas);
             }
         }
@@ -326,8 +326,8 @@ public class GamePanel extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         platform.clear();
-        missiles.clear();
-        puff.clear();
+        bullets.clear();
+        smokes.clear();
 
         gameState = STATE_GAME_OVER;
     }

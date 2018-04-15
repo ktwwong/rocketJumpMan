@@ -22,7 +22,7 @@ public class Bullet extends GameObject {
         width = w;
         height = h;
 
-        // cap missile speed
+        // cap  speed
         if (speed > 40)
             speed = 40;
 
