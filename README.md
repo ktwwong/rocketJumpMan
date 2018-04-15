@@ -54,4 +54,4 @@ The most important thing right now is I have to make the ranking as soon as poss
 
 __201804151709 last update:__
 fuuuu....the job finally get done, I have to take some rest now. Yes, go to play video gameXD  
-the fire animation and fuel feature still can't add in:( maybe find some time to figure it out...but for what?ww
+The fire animation and fuel feature still can't add in:( maybe find some time to figure it out...but for what?ww
